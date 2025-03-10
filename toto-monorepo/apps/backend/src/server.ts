@@ -24,7 +24,7 @@ async function preprocessImage(inputPath: string, outputPath: string) {
 
 function correctOCRNumber(number: string): string {
   const corrections: Record<string, string> = {
-    "O": "0", "o": "0", "D": "0", "I": "1", "l": "1", "S": "5", "G": "6", "B": "8"
+    "O": "0", "o": "0", "D": "0", "I": "1", "l": "1", "S": "5", "G": "6", "B": "8", "a": "4"
   };
   return number.split("").map(char => corrections[char] || char).join("");
 }
@@ -80,6 +80,7 @@ fastify.post("/upload", async (request, reply) => {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      console.log(line);
 
       // Detect "Bet Receipt" and extract the next line as record ID
       if (!processingEntries) {
@@ -89,6 +90,10 @@ fastify.post("/upload", async (request, reply) => {
           }
           processingEntries = true; // Start processing entries after these two lines
         }
+        continue;
+      }
+
+      if (line.toLowerCase().includes("board")) {
         continue;
       }
 
@@ -103,9 +108,6 @@ fastify.post("/upload", async (request, reply) => {
         if (systemNumber >= 7 && systemNumber <= 12) {
           entrySize = systemNumber;
           skipNextLine = true; // Skip the next line
-        }
-        if (line.toLowerCase().includes("board(s)")) {
-          skipNextLine = true; // Skip this line as well if "Board(S)" is present
         }
         continue;
       }
